@@ -2,7 +2,7 @@ import pytest
 import requests
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
-from datetime import datetime
+
 import random
 import string
 
@@ -15,37 +15,16 @@ class TestUserRegister(BaseCase):
         ({'password': '123', 'username': 'learnqa', 'firstName': 'learnqa', 'lastName': 'learnqa'}, 'email')
     ]
 
-    def setup_method(self):
-        base_part = 'learnqa'
-        domain = 'example.com'
-        random_part = datetime.now().strftime("%m%d%Y%H%M%S")
-        self.email = f"{base_part}{random_part}@{domain}"
-        self.invalid_email = f"{base_part}{random_part}{domain}"
-        self.user_short_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(1))
-        self.user_long_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(251))
-
     def test_user_create_sucessfully(self):
-        data = {
-            'password': '123',
-            'username': 'learnqa',
-            'firstName': 'learnqa',
-            'lastName': 'learnqa',
-            'email': self.email
-        }
-
+        data = self.prepare_registration_data()
         response = requests.post('https://playground.learnqa.ru/api/user/', data=data)
+
         Assertions.assert_code_status(response, 200)
         Assertions.assert_json_has_key(response, "id")
 
     def test_create_user_with_existing_email(self):
         email = 'vinkotov@example.com'
-        data = {
-            'password': '123',
-            'username': 'learnqa',
-            'firstName': 'learnqa',
-            'lastName': 'learnqa',
-            'email': email
-        }
+        data = self.prepare_registration_data(email)
         response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
@@ -54,12 +33,13 @@ class TestUserRegister(BaseCase):
 
     # Тест создание пользователя с некорректным email - без символа @
     def test_create_user_without_post_symbol_in_email(self):
+        invalid_email = "a.v.inanovexample.com"
         data = {
             'password': '123',
             'username': 'learnqa',
             'firstName': 'learnqa',
             'lastName': 'learnqa',
-            'email': self.invalid_email
+            'email': invalid_email
         }
         response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
 
@@ -69,12 +49,14 @@ class TestUserRegister(BaseCase):
 
     # Создание пользователя с очень коротким именем в один символ
     def test_create_user_with_too_short_username(self):
+        user_short_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(1))
+        email = 'vinkotov@example.com'
         data = {
             'password': '123',
-            'username': self.user_short_name,
+            'username': user_short_name,
             'firstName': 'learnqa',
             'lastName': 'learnqa',
-            'email': self.email
+            'email': email
         }
         response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
 
@@ -84,12 +66,14 @@ class TestUserRegister(BaseCase):
 
     # Создание пользователя с очень длинным именем - длиннее 250 символов
     def test_create_user_with_too_long_username(self):
+        user_long_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(251))
+        email = 'vinkotov@example.com'
         data = {
             'password': '123',
-            'username': self.user_long_name,
+            'username': user_long_name,
             'firstName': 'learnqa',
             'lastName': 'learnqa',
-            'email': self.email
+            'email': email
         }
         response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
 
