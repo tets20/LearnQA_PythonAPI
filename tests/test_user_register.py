@@ -1,5 +1,5 @@
 import pytest
-import requests
+from lib.my_requests import MyRequests
 from lib.base_case import BaseCase
 from lib.assertions import Assertions
 
@@ -17,7 +17,7 @@ class TestUserRegister(BaseCase):
 
     def test_user_create_sucessfully(self):
         data = self.prepare_registration_data()
-        response = requests.post('https://playground.learnqa.ru/api/user/', data=data)
+        response = MyRequests.post('/user/', data=data)
 
         Assertions.assert_code_status(response, 200)
         Assertions.assert_json_has_key(response, "id")
@@ -25,7 +25,7 @@ class TestUserRegister(BaseCase):
     def test_create_user_with_existing_email(self):
         email = 'vinkotov@example.com'
         data = self.prepare_registration_data(email)
-        response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
+        response = MyRequests.post('/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"Users with email '{email}' already exists", \
@@ -41,7 +41,7 @@ class TestUserRegister(BaseCase):
             'lastName': 'learnqa',
             'email': invalid_email
         }
-        response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
+        response = MyRequests.post('/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"Invalid email format",\
@@ -58,7 +58,7 @@ class TestUserRegister(BaseCase):
             'lastName': 'learnqa',
             'email': email
         }
-        response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
+        response = MyRequests.post('/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"The value of 'username' field is too short",\
@@ -75,7 +75,7 @@ class TestUserRegister(BaseCase):
             'lastName': 'learnqa',
             'email': email
         }
-        response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
+        response = MyRequests.post('/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"The value of 'username' field is too long",\
@@ -85,7 +85,7 @@ class TestUserRegister(BaseCase):
     @pytest.mark.parametrize('data_without_some_param, param_name',exclude_params)
     def test_create_user_without_parameter(self,data_without_some_param,param_name):
         data = data_without_some_param
-        response = requests.post('https://playground.learnqa.ru/api/user/',data=data)
+        response = MyRequests.post('/user/',data=data)
 
         Assertions.assert_code_status(response, 400)
         assert response.content.decode("utf-8") == f"The following required params are missed: {param_name}",\
